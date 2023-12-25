@@ -264,11 +264,11 @@
 
             updateFromURL();
 
-            const client = mqtt.connect("https://mqtt.eclipseprojects.io/mqtt");
+            const client = mqtt.connect("wss://mqtt.eclipseprojects.io/mqtt");
             const publishIndicator = document.getElementById('publishIndicator');
 
             function updatePublishIndicator(isConnected) {
-                publishIndicator.style.backgroundColor = isConnected ? 'blue' : 'red';
+                publishIndicator.style.backgroundColor = isConnected ? 'blue' : 'orange';
             }
 
             client.on('connect', function () {
