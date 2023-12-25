@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wish List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-bg-color: #FFFFFF; /* Light background */
+            --text-color: #111827; /* Dark text color */
+            --accent-color: #6d28d9; /* Accent color for hover */
+            --accent-color2: #c8a6ff; /* Accent color for hover */
+            --table-bg-color: #F3F4F6; /* Light background for table */
+            --table-header-bg-color: #E5E7EB; /* Light gray for table header */
+            --table-row-bg-color: #FFFFFF; /* White for table rows */
+            --highlight-color: #FEF3C7; /* Highlight color for last public wish */
+            --teal-color: #46e5bd; /* Teal color for editable text */
+            --dark-purple-color: #6d28d9; /* Dark purple color for theme */
+        }
+        body {
+            background-color: var(--main-bg-color);
+            font-family: 'Open Sans', sans-serif;
+            color: var(--text-color);
+        }
+        .main-text {
+            font-size: clamp(4rem, 8vw, 8rem); /* Responsive font size */
+            line-height: 1;
+            font-weight: 700;
+            text-align: left;
+            padding: 2rem;
+            margin: 0;
+            color: var(--dark-purple-color); /* Dark purple text color */
+        }
+        .toggle-word {
+            cursor: pointer;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+            transition: opacity 0.3s ease;
+        }
+        .toggle-word:hover {
+            color: var(--accent-color2);
+        }
+        .editable {
+            display: inline-block;
+            outline: none;
+            color: var(--teal-color); /* Teal color for editable text */
+            background: none;
+            border: none;
+            font-size: inherit;
+            font-weight: inherit;
+            cursor: text;
+        }
+        .wish-input-container {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .wish-input {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 2px solid var(--text-color);
+            width: 50%; /* 2x wider as per the wish */
+        }
+        .wish-table {
+            width: 100%;
+            margin-top: 1rem; /* Space between input and table */
+            display: table;
+        }
+        .light-table th {
+            background-color: var(--table-header-bg-color);
+        }
+        .light-table td {
+            background-color: var(--table-row-bg-color);
+        }
+        .highlight-last {
+            background-color: var(--highlight-color);
+        }
+        .delete-wish {
+            cursor: pointer;
+            margin-left: 1rem;
+            color: var(--text-color);
+        }
+        .privacy-toggle {
+            font-size: 0.875rem; /* Small font size for toggle */
+            margin-right: 0.5rem;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        function uuidv4(){
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x'? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+            });
+        };
+        function short_uuid(uuid) {
+            return uuid.substring(0, 8) + uuid.substring(9, 13) + uuid.substring(14, 18) + uuid.substring(19, 23) + uuid.substring(24);
+        };
+        let origin = null;
+        function getOrGenerateUserID(owner="user",clear=false) {
+            console.log(1111111111)
+            let id = "";
+            if (origin != null && owner=="user" && !clear) { return origin }
+            console.log(222222222)
+            res = localStorage.getItem('user_id')
+            if (res == null || res == "" || clear) {
+                console.log(3333333333,owner)
+                if (owner == "user"){
+                    console.log(444444,owner)
+                    id = localStorage.getItem('user_id')
+                    if (user_id && !clear) {
+                        return user_id
+                    }
+                    // if no user_id found in local storage, generate a new one "user_"+uuid
+                    id = owner+"_" + short_uuid(uuidv4())
+                    console.log("owner", id)
+                    // save the new user_id to local storage
+
+                    localStorage.setItem('user_id', id)
+                    return id
+                }
+                else{
+                    id = owner+"_" + short_uuid(uuidv4())
+                    console.log("owner", id)
+                    return id
+                }
+            }
+            if( owner == "user"){
+
+                console.log(55555555,res)
+                return res
+            }
+            return id
+        };
+    </script>
+    <script>
+        origin = null;
+
+         let signedIn = false
+            let user_id = null
+            
+            user_id = getOrGenerateUserID(); // Get user ID from local storage or generate a new one
+            origin = user_id;
+    </script>
+</head>
+<body>
+    <h1 class="main-text">
+        <span class="what-word" contenteditable="true">What</span> <span class="do-word" contenteditable="true">do</span><br><span class="i-word" contenteditable="true">i</span> <span class="act-word" contenteditable="true">wish</span><br><span class="toggle-word" contenteditable="true">for ㅤ</span><span class="editable" contenteditable="true">myself</span><span contenteditable="true">?</span>
+    </h1>
+    <div class="wish-input-container">
+        <span class="privacy-toggle bg-gray-200 text-gray-800 py-1 px-2 rounded-md">Private</span>
+        <input type="text" class="wish-input" placeholder="Enter your wish" id="wishInput">
+        <div id="publishIndicator" style="width: 10px; height: 10px; border-radius: 50%; background-color: red; margin-left: 10px;"></div>
+    </div>
+    <div class="section-container">
+        <div class="section-container mx-auto max-w-4xl">
+            <div id="lastPublicWishContainer" class="bg-yellow-100 border border-yellow-300 rounded p-2 text-center my-3">
+                <p class="text-sm ">Last Public Wish</p>
+                <p id="lastPublicWish"  class="">No public wishes yet.</p>
+            </div>
+            <div class="my-8">
+                <h2 class="text-4xl font-bold mb-4 text-center">Personal Wishes</h2>
+    <table class="wish-table light-table mt-10">
+        <thead>
+            <tr>
+                <th>Wish</th>
+                <th>For/From</th>
+                <th>Target</th>
+                <th hidden=true>timestamp</th>
+                <th hidden=true>origin</th>
+                <th hidden=true>wishID</th>
+                <th hidden=true>What</th>
+                <th hidden=true>Do</th>
+                <th hidden=true>I</th>
+                <th hidden=true>Act</th>
+                <th>Delete</th> <!-- Column for delete buttons -->
+            </tr>
+        </thead>
+        <tbody id="wishes">
+            <!-- Wishes will be added here -->
+        </tbody>
+    </table>
+            <div class="my-8">
+                <h2 class="text-4xl font-bold mb-4 text-center">Public Wishes</h2>
+
+                <table class="wish-table light-table w-full text-left border-collapse">
+    <table class="wish-table light-table mt-4">
+        <thead>
+            <tr>
+                <th>Wish</th>
+                <th>For/From</th>
+                <th>Target</th>
+                <th hidden=true>timestamp</th>
+                <th hidden=true>origin</th>
+                <th hidden=true>wishID</th>
+                <th hidden=true>What</th>
+                <th hidden=true>Do</th>
+                <th hidden=true>I</th>
+                <th hidden=true>Act</th>
+                <th>Delete</thc> <!-- Column for delete buttons -->
+            </tr>
+        </thead>
+        <tbody id="publicWishes">
+            <!-- Public wishes will be added here -->
+        </tbody>
+    </table>
+        <!-- Include MQTT.js library -->
+        <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+        <script>
+            
+            const wishInput = document.querySelector('#wishInput');
+            const wishesBody = document.getElementById('wishes');
+            const publicWishesBody = document.getElementById('publicWishes');
+            const editable = document.querySelector('.editable');
+            const toggleWord = document.querySelector('.toggle-word');
+            const privacyToggle = document.querySelector('.privacy-toggle');
+            const whatWord = document.querySelector('.what-word');
+            const iWord = document.querySelector('.i-word');
+            const doWord = document.querySelector('.do-word');
+            const actWord = document.querySelector('.act-word');
+
+            let isPublic = false; // Default to private
+
+           
+
+                 function updateFromURL() {
+                        const forValue = getURLParameter('for');
+                        const targetValue = getURLParameter('target');
+                        const wishValue = getURLParameter('wish');
+                        const iValue = getURLParameter('i') != null ? getURLParameter('i') : doWord.iContent;
+                        const actValue = getURLParameter('act') != null ? getURLParameter('act') : doWord.actContent;
+                        const doValue = getURLParameter('do') != null ? getURLParameter('do') : doWord.textContent;
+                        const whatValue = getURLParameter('what') != null ? getURLParameter('what') : whatWord.textContent;
+
+                        if (forValue) {
+                            toggleWord.textContent = forValue + ' ';
+                        }
+                        if (targetValue) {
+                            editable.textContent = targetValue;
+                        }
+                        if (wishValue) {
+                            wishInput.value = wishValue;
+                        }
+                        // Update the page content with the new parameters
+                        if (iValue) {
+                            document.querySelector('.i-word').textContent = iValue;
+                        }
+                        if (actValue) {
+                            document.querySelector('.act-word').textContent = actValue;
+                        }
+                        if (doValue) {
+                            document.querySelector('.do-word').textContent = doValue; // Capitalize the first letter
+                        }
+                        if (whatValue) {
+                            document.querySelector('.what-word').textContent = whatValue;
+                        }
+                    }
+
+
+            updateFromURL();
+
+            const client = mqtt.connect("mqtt://mqtt.eclipseprojects.io/mqtt");
+            const publishIndicator = document.getElementById('publishIndicator');
+
+            function updatePublishIndicator(isConnected) {
+                publishIndicator.style.backgroundColor = isConnected ? 'green' : 'red';
+            }
+
+            client.on('connect', function () {
+                    console.log('Connected to MQTT broker');
+                    updatePublishIndicator(true);
+                    // Subscribe to a topic with QoS 2
+                    client.subscribe('wishes', { qos: 2 }, function (err, granted) {
+                        if (err) {
+                            console.error('Subscription failed:', err);
+                        } else {
+                            console.log('Subscription successful:', granted);
+                            //client.publish("presence", "Hello mqtt");
+                        }
+                    });
+                });
+
+            client.on('close', function () {
+                console.log('Disconnected from MQTT broker');
+                updatePublishIndicator(false);
+            });
+
+            client.on("message", (topic, message) => {
+                console.log("MQTT:::",topic,":::", message.toString());
+                const [wish, forFrom, target , timestamp , origin, wishID] = message.toString().split('|');
+                // addWishToTable(wish, forFrom, target, true);
+                addWishToTable(document.querySelector('.what-word').textContent, document.querySelector('.do-word').textContent, document.querySelector('.i-word').textContent, document.querySelector('.act-word').textContent, wish, forFrom, target, timestamp, origin,wishID, isPublic = true)
+                updateLastPublicWish(document.querySelector('.what-word').textContent, document.querySelector('.do-word').textContent, document.querySelector('.i-word').textContent, document.querySelector('.act-word').textContent, wish, forFrom, target, timestamp, origin, wishID)
+
+                // updateLastPublicWish(wish, forFrom, target);
+            });
+
+            function updateLastPublicWish(what, doWord, i ,act, wish, forFrom, target, timestamp, origin, wishID) {
+                const lastPublicWish = document.getElementById('lastPublicWish');
+                lastPublicWish.textContent = `${what} ${doWord} ${i} ${act} ${forFrom} ${target} :::  ${wish} ::: ${timestamp} ::: ${origin} ::: ${wishID}`;
+            }
+
+
+        privacyToggle.addEventListener('click', function() {
+            isPublic = !isPublic;
+            privacyToggle.textContent = isPublic ? 'Public' : 'Private';
+            privacyToggle.classList.toggle('bg-gray-800', isPublic);
+            privacyToggle.classList.toggle('text-white', isPublic);
+            privacyToggle.classList.toggle('bg-gray-200', !isPublic);
+            privacyToggle.classList.toggle('text-gray-800', !isPublic);
+        });
+
+        function addWishToTable(what, doWord, i, act, wish, forFrom, target, timestamp, origin,wishID, isPublic = false) {
+            //console.log("adding to table")
+            if (isPublic) {
+            }
+            timestamp = timestamp != null ? timestamp : new Date().toISOString();
+            const row = document.createElement('tr');
+            const wishCell = document.createElement('td');
+            wishCell.textContent = wish;
+            const forFromCell = document.createElement('td');
+            forFromCell.textContent = forFrom;
+            const targetCell = document.createElement('td');
+            targetCell.textContent = target;
+            const timestampCell = document.createElement('td');
+            timestampCell.textContent = timestamp;
+            timestampCell.hidden=true
+            const originCell = document.createElement('td');
+            originCell.textContent = origin;
+            originCell.hidden=true
+            const idCell = document.createElement('td');
+            idCell.textContent = wishID;
+            idCell.hidden=true
+            const whatCell = document.createElement('td');
+            whatCell.textContent = what;
+            whatCell.hidden=true
+            const doCell = document.createElement('td');
+            doCell.textContent = doWord;
+            doCell.hidden=true
+            const iCell = document.createElement('td');
+            iCell.textContent = i;
+            iCell.hidden=true
+            const actCell = document.createElement('td');
+            actCell.textContent = act;
+            actCell.hidden=true
+            const deleteCell = document.createElement('td');
+            const deleteButton = document.createElement('span');
+            deleteButton.textContent = 'x';
+            deleteButton.classList.add('delete-wish');
+            deleteButton.classList.add('text-center');
+            deleteButton.onclick = function() {
+                row.remove();
+                saveWishes();
+            };
+            deleteCell.appendChild(deleteButton);
+            row.appendChild(wishCell); row.append(" ");
+            row.appendChild(forFromCell); row.append(" ");
+            row.appendChild(targetCell); row.append(" ");
+            row.appendChild(timestampCell); row.append(" ");
+            row.appendChild(originCell); row.append(" ");
+            row.appendChild(idCell); row.append(" ");
+            row.appendChild(whatCell); row.append(" ");
+            row.appendChild(doCell); row.append(" ");
+            row.appendChild(iCell); row.append(" ");
+            row.appendChild(actCell); row.append(" ");
+            row.appendChild(deleteCell); row.append(" ");
+            if (isPublic) {
+                publicWishesBody.appendChild(row);
+                row.classList.add('highlight-last');
+                // Remove highlight from previous last public wish
+                const lastPublicWish = publicWishesBody.querySelector('.highlight-last');
+                if (lastPublicWish && lastPublicWish !== row) {
+                    lastPublicWish.classList.remove('highlight-last');
+                }
+                saveWishes();
+                
+            } else {
+                wishesBody.appendChild(row);
+            }
+        }
+
+        function saveWishes() {
+            const wishes = Array.from(wishesBody.querySelectorAll('tr')).map(function(row) {
+                return {
+                    wish: row.cells[0].textContent,
+                    forFrom: row.cells[1].textContent,
+                    target: row.cells[2].textContent,
+                    timestamp: row.cells[3].textContent,
+                    origin: row.cells[4].textContent,
+                    id: row.cells[5].textContent,
+                    what: row.cells[6].textContent,
+                    do: row.cells[7].textContent,
+                    i: row.cells[8].textContent,
+                    act: row.cells[9].textContent,
+                };
+            });
+            const publicWishes = Array.from(publicWishesBody.querySelectorAll('tr')).map(function(row) {
+                return {
+                    wish: row.cells[0].textContent,
+                    forFrom: row.cells[1].textContent,
+                    target: row.cells[2].textContent,
+                    timestamp: row.cells[3].textContent,
+                    origin: row.cells[4].textContent,
+                    id: row.cells[5].textContent,
+                    what: row.cells[6].textContent,
+                    do: row.cells[7].textContent,
+                    i: row.cells[8].textContent,
+                    act: row.cells[9].textContent,
+                };
+            });
+            // console.log("Saved", publicWishes)
+
+            localStorage.setItem('wishes', JSON.stringify(wishes));
+            localStorage.setItem('publicWishes', JSON.stringify(publicWishes));
+            console.log(".......",JSON.stringify(publicWishes))
+            // console.log('Wishes and public wishes have been saved to local storage.');
+        }
+
+        function loadWishes() {
+            const wishes = JSON.parse(localStorage.getItem('wishes')) || [];
+            const publicWishes = JSON.parse(localStorage.getItem('publicWishes')) || [];
+            wishes.forEach(wish => addWishToTable(wish.what, wish.do, wish.i, wish.act, wish.wish, wish.forFrom, wish.target, wish.timestamp, wish.origin, wish.id, false));
+            publicWishes.forEach(wish => addWishToTable(wish.what, wish.do, wish.i, wish.act, wish.wish, wish.forFrom, wish.target, wish.timestamp, wish.origin, wish.id, true));
+            if (publicWishes.length > 0) {
+                const lastWish = publicWishes[publicWishes.length - 1];
+                console.log("@@@@@@",lastWish.wish, lastWish.forFrom, lastWish.target, lastWish.timestamp, lastWish.origin, lastWish.id);
+                updateLastPublicWish(lastWish.what, lastWish.do, lastWish.i, lastWish.act, lastWish.wish, lastWish.forFrom, lastWish.target, lastWish.timestamp, lastWish.origin, lastWish.id);
+            }
+        }
+
+        function getURLParameter(name) {
+            const results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+            if (results == null) {
+                return null;
+            }
+            return decodeURIComponent(results[1]) || null;
+        }
+
+        window.onload = function() {
+            loadWishes();
+        };
+
+         function handleWishSubmission() {
+            const wish = wishInput.value.trim();
+            const forFrom = toggleWord.textContent.trim();
+            const target = editable.textContent.trim();
+            const timestamp = new Date().toISOString();
+            const origin = getOrGenerateUserID(owner="user", clear=false)
+            const wishID = getOrGenerateUserID(owner="wish",clear=true)
+            if (wish) {
+                if (isPublic){  
+                    client.publish("wishes", [wish, forFrom.replace("ㅤ", ""), target, timestamp, origin, wishID].join('|'), { qos: 2 });      
+                }
+                else{
+                    console.log(document.querySelector('.what-word').textContent, document.querySelector('.do-word').textContent, document.querySelector('.i-word').textContent, document.querySelector('.act-word').textContent, wish, forFrom, target,timestamp,origin, isPublic, wishID)
+
+                    addWishToTable(document.querySelector('.what-word').textContent, document.querySelector('.do-word').textContent, document.querySelector('.i-word').textContent, document.querySelector('.act-word').textContent, wish, forFrom, target, timestamp, origin, wishID, isPublic = false)
+                    // addWishToTable(wish, forFrom.replace("ㅤ", ""), target, isPublic);    
+                }
+            saveWishes();
+            wishInput.value = '';
+            }
+        }
+
+        wishInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                handleWishSubmission();
+            }
+        });
+
+
+        // Toggle and fade the word "for" to "from" and back
+        toggleWord.addEventListener('click', function() {
+            const currentWord = toggleWord.textContent.replace("ㅤ","").trim();
+            toggleWord.style.opacity = '0';
+            setTimeout(() => {
+                toggleWord.textContent = currentWord === 'for' ? 'from ' : 'for ㅤ';
+                toggleWord.style.opacity = '1';
+            }, 300);
+        });
+    </script>
+</body>
+</html>
